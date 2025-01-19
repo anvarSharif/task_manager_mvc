@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body>
+<div class="container mt-4">
+    <form action="" class="d-flex align-items-center">
+        <!-- Search Input -->
+        <input type="text" class="form-control w-25 me-3" placeholder="Search..." name="search"
+               th:value="${filter?.search}"
+               onchange="this.form.submit()">
+
+        <!-- Filter Buttons -->
+        <div class="btn-group me-3">
+            <button type="submit" name="deadline_filter" value="kechikkan"
+                    th:class="|btn ${filter.deadline_filter == 'kechikkan' ? 'btn-secondary' : 'btn-outline-secondary'}|">
+                Kechikkan
+            </button>
+            <button type="submit" name="deadline_filter" value="xavfli"
+                    th:class="|btn  ${filter.deadline_filter == 'xavfli' ? 'btn-secondary' : 'btn-outline-secondary'}|">
+                Xavfli
+            </button>
+            <button type="submit" name="deadline_filter" value="yaqin"
+                    th:class="|btn  ${filter.deadline_filter == 'yaqin' ? 'btn-secondary' : 'btn-outline-secondary'}|">
+                Yaqin
+            </button>
+            <button type="submit" name="deadline_filter" value="deadlinesiz"
+                    th:class="|btn ${filter.deadline_filter == 'deadlinesiz' ? 'btn-secondary' : 'btn-outline-secondary'}|">
+                Deadlinesiz
+            </button>
+            <button type="submit" name="deadline_filter" value=""
+                    th:class="|btn ${filter.deadline_filter == '' ? 'btn-secondary' : 'btn-outline-secondary'}|">All
+            </button>
+        </div>
+        <div class="mx-4"></div>
+        <div class="mx-4"></div>
+        <!-- User Avatars -->
+        <div class="d-flex align-items-center">
+            <button type="submit" name="userId" value="99bf70ac-c43b-47fa-83bb-ac38c0c72ae4"
+                    class="btn btn-outline-secondary rounded-circle me-2 ">All
+            </button>
+            <th:block th:each="user : ${users}">
+                <button type="submit" name="userId" th:value="${user?.id}"
+                        class="border-0 bg-transparent position-relative"
+                        th:classappend="${filter?.userId == user?.id} ? 'border border-primary rounded-circle' : ''">
+                    <img th:src="|/file/get/${user?.photo?.id}|"
+                         class="rounded-circle img-thumbnail"
+                         th:classappend="${filter?.userId == user?.id} ? 'border-success' : ''"
+                         height="50" width="50" alt="User">
+                    <span th:if="${filter?.userId == user?.id}"
+                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+            ✓
+        </span>
+                </button>
+                <input th:if="${filter.userId != null}"
+                       type="hidden" name="selectedUserId" th:value="${filter.userId}">
+            </th:block>
+
+        </div>
+    </form>
+
+    <a href="/report/deadline" class="btn btn-outline-secondary m-2">Criminals</a>
+    <a href="/report/developer" class="btn btn-outline-secondary me-2">Developer result</a>
+    <div class="row">
+        <div class="container mt-3">
+            <div class="row">
+                <div th:each="status : ${statuses}" class="col-md-3">
+                    <div class="border border-dark p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 th:text="${status.status}" class="text-center mb-0"></h5>
+                            <form action="/status/edite" method="get" class="d-flex align-items-center mb-0">
+                                <input type="hidden" th:value="${status.id}" name="statusId">
+                                <button class="btn btn-secondary ms-3">Edit</button>
+                            </form>
+                        </div>
+                        <form action="/task/create" method="get" class="d-flex align-items-center mb-0">
+                            <input type="hidden" th:value="${status.id}" name="statusId">
+                            <button class="btn btn-success w-100 mb-3">Create Task</button>
+                        </form>
+                        <div th:if="${task.status==status}" th:each="task : ${tasks}" class="border p-2 mb-2">
+                            <img th:if="${task.file!=null}" th:src="|/file/get/${task?.file?.id}|" alt=""
+                                 class="rounded me-2"
+                                 style="width: 100px; height: 100px;">
+                            <div class="d-flex align-items-center mb-2">
+                                <div>
+                                    <h6 class="mb-0" th:text="${task.title}">Task Title</h6>
+                                    <small th:if="${task.deadline!=null}" th:text="'Deadline: ' + ${task.deadline}">Deadline</small>
+                                    <img th:if="${!task.users.isEmpty()}" th:each="taskUser:${task.users}"
+                                         th:src="|/file/get/${taskUser?.photo?.id}|"
+                                         class="rounded-circle me-2" height="30" width="30">
+                                </div>
+                            </div>
+                            <a th:href="|/task/${task.id}|" class="btn btn-outline-secondary m-1">Show</a>
+                            <div class="row">
+                                <div class="col-6">
+                                    <form action="/task/editeStatus" method="post">
+                                        <input type="hidden" name="taskId" th:value="${task.id}">
+                                        <input type="hidden" name="action" value="minus">
+                                        <button th:if="${status.number!=1&&status.isCompleted!=true}"
+                                                class="btn btn-secondary"><
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-6">
+                                    <form action="/task/editeStatus" method="post">
+                                        <input type="hidden" name="taskId" th:value="${task.id}">
+                                        <input type="hidden" name="action" value="plus">
+                                        <button th:if="${status.isCompleted!=true}" class="btn btn-secondary">></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <a class="btn btn-primary ms-auto" href="/status/create">Create Column</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

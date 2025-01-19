@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Status</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body>
+<div class="container mt-5">
+    <h3 th:if="status==null?'Create Status':'Edite Status'">Create Status</h3>
+    <form th:action="status==null?'/status/create':'/status/edite'" method="post" class="mt-4">
+        <input type="hidden" th:value="${status?.id}" name="statusId">
+        <div class="mb-3">
+            <label for="status" class="form-label">Status</label>
+            <input type="text" id="status" name="status" th:value="${status?.status}"  class="form-control" placeholder="Enter status" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="number" class="form-label" th:text="|Number (saqlangan ohirgi status numberi ${endStatusOrder})|" ></label>
+            <input type="number" id="number" name="number" th:value="${status?.number}" class="form-control" placeholder="Enter number" required>
+        </div>
+
+        <div th:if="${completedStatus==null||status?.isCompleted==true}" class="form-check mb-3">
+            <input type="checkbox" id="isCompleted" name="isCompleted"
+                   class="form-check-input"
+                   th:checked="${status?.isCompleted != null && status.isCompleted}">
+            <label for="isCompleted" class="form-check-label">Is Completed</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+    <form th:if="${status!=null}" action="/status/delete" method="post">
+    <input type="hidden" th:value="${status.id}" name="statusId">
+    <button type="submit" class="btn btn-danger my-2">Delete this Status</button>
+</form>
+</div>
+</body>
+</html>

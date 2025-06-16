@@ -5,11 +5,14 @@ import com.example.task_manager_mvc.payload.StatusDTO;
 import com.example.task_manager_mvc.payload.TaskDTO;
 import com.example.task_manager_mvc.repo.*;
 import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +40,23 @@ public class TaskController {
 
     @Transactional
     @PostMapping("/create")
-    public String createTask(@ModelAttribute TaskDTO taskDTO, MultipartFile file) throws IOException {
+    public String createTask(@Valid @ModelAttribute TaskDTO taskDTO, BindingResult bindingResult, MultipartFile file,Model model,@RequestParam UUID selectedUserId) throws IOException {
+        model.addAttribute("userId",selectedUserId);
+        if (bindingResult.hasErrors()){
+            model.addAttribute("taskDTO",taskDTO);
+            model.addAttribute("selectedUserId",selectedUserId);
+            if (taskDTO.getTaskId()!=null){
+                Task task = taskRepository.findById(taskDTO.getTaskId()).orElseThrow();
+                task.setTitle("");
+                model.addAttribute("task", task);
+            }
+            model.addAttribute("users", userRepository.findAll());
+            if (taskDTO.getStatusId()!=null){
+                model.addAttribute("statusId", taskDTO.getStatusId());
+            }
+            return "addTask";
+        }
+
         List<User> selectedUsers = new ArrayList<>();
         if (taskDTO.getSelectedUsers() != null) {
             selectedUsers = userRepository.findAllById(taskDTO.getSelectedUsers());
@@ -45,6 +64,7 @@ public class TaskController {
         Status status = statusRepository.findById(taskDTO.getStatusId()).orElseThrow();
         Attachment attachment = null;
         if (!file.isEmpty()) {
+
             attachment = new Attachment(file.getOriginalFilename());
             attachmentRepository.save(attachment);
             AttachmentContent attachmentContent = new AttachmentContent(
@@ -53,7 +73,16 @@ public class TaskController {
             );
             attachmentContentRepository.save(attachmentContent);
         }
+        if (taskDTO.getTaskId()!=null&& file.isEmpty()){
+            Task task = taskRepository.findById(taskDTO.getTaskId()).orElseThrow();
+            attachment=task.getFile();
+        }
+        UUID taskId = null;
+        if (taskDTO.getTaskId() != null) {
+            taskId = taskDTO.getTaskId();
+        }
         Task task = new Task(
+                taskId,
                 taskDTO.getTitle(),
                 taskDTO.getDescription(),
                 status,
@@ -62,23 +91,13 @@ public class TaskController {
                 taskDTO.getDeadline()
         );
         taskRepository.save(task);
-        return "redirect:/";
-    }
-
-    @PostMapping("/edite")
-    public String editeTask(@ModelAttribute TaskDTO taskDTO) {
-
-        return "redirect:/";
+        return "redirect:/?userId="+selectedUserId;
     }
 
     @PostMapping("/comment")
-    public String addComment(Model model, @RequestParam UUID taskId, @RequestParam String commentText) {
-
-        List<User> users = userRepository.findAll();
-        User user = users.get(1);
-
+    public String addComment( @RequestParam UUID taskId,@AuthenticationPrincipal User user, @RequestParam String commentText,@RequestParam UUID selectedUserId,Model model) {
         Task task = taskRepository.findById(taskId).orElseThrow();
-
+        model.addAttribute("selectedUserId",selectedUserId);
         Comment comment = new Comment(
                 null,
                 commentText,
@@ -87,17 +106,17 @@ public class TaskController {
                 LocalDateTime.now()
         );
         commentRepository.save(comment);
-        return "redirect:/task/" + taskId;
+        return "redirect:/task/" + taskId+"?selectedUserId="+selectedUserId;
     }
 
     @PostMapping("/delete")
-    public String delete(@RequestParam UUID taskId) {
+    public String delete(@RequestParam UUID taskId,@RequestParam UUID selectedUserId) {
         taskRepository.deleteById(taskId);
-        return "redirect:/";
+        return "redirect:/?userId="+selectedUserId;
     }
 
     @PostMapping("/editeStatus")
-    public String editeStatus(@RequestParam UUID taskId, @RequestParam String action) {
+    public String editeStatus(@RequestParam UUID taskId, @RequestParam String action,@RequestParam UUID selectedUserId) {
         Task task = taskRepository.findById(taskId).orElseThrow();
         List<Status> statusList = statusRepository.getFilteredStatuses();
         Optional<Status> byIsCompleted = statusRepository.findByIsCompletedTrue();
@@ -115,7 +134,7 @@ public class TaskController {
                     }
                 }
                 taskRepository.save(task);
-                return "redirect:/";
+                return "redirect:/?userId="+selectedUserId;
             }
         }
 

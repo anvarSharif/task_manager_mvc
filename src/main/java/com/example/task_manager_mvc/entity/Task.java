@@ -26,6 +26,7 @@ public class Task {
     @ManyToMany
     private List<User> users;
     private LocalDate deadline;
+    //private String deadlineStatus;
     public Task(String title, String description, Status status, Attachment file, List<User> users, LocalDate deadline) {
         this.title = title;
         this.description = description;

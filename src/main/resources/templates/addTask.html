@@ -44,48 +44,120 @@
 
                 userContainer.appendChild(userDiv);
 
-                // Remove the selected option from the select box
                 selectedUser.options[selectedUser.selectedIndex].remove();
             }
 
-            selectedUser.value = ''; // Reset the select box
+            selectedUser.value = '';
+        }
+        function loadSelectedUsers() {
+            const selectedUser = document.getElementById('userSelect');
+            const userContainer = document.getElementById('selectedUsers');
+            const existingUsers = document.querySelectorAll('#existingUsers input');
+
+            existingUsers.forEach(input => {
+                const userId = input.getAttribute('data-id');
+                const userName = input.value;
+
+                if (!document.getElementById('user-' + userId)) {
+                    const userDiv = document.createElement('div');
+                    userDiv.id = 'user-' + userId;
+                    userDiv.classList.add('d-flex', 'align-items-center', 'mb-2');
+
+                    const userText = document.createElement('span');
+                    userText.innerText = userName;
+                    userText.classList.add('me-3');
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
+                    removeButton.innerText = 'x';
+                    removeButton.onclick = () => {
+                        userContainer.removeChild(userDiv);
+                        const option = document.createElement('option');
+                        option.value = userId;
+                        option.text = userName;
+                        selectedUser.appendChild(option);
+                    };
+
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'selectedUsers';
+                    hiddenInput.value = userId;
+
+                    userDiv.appendChild(userText);
+                    userDiv.appendChild(removeButton);
+                    userDiv.appendChild(hiddenInput);
+
+                    userContainer.appendChild(userDiv);
+
+                    const optionToRemove = selectedUser.querySelector(`option[value='${userId}']`);
+                    if (optionToRemove) {
+                        optionToRemove.remove();
+                    }
+                }
+            });
         }
     </script>
 </head>
-<body>
+<body onload="loadSelectedUsers()">
 <div class="container mt-5">
-    <h3>Add Task</h3>
-    <form th:action="@{/task/create}" method="post" enctype="multipart/form-data" class="mt-4">
-        <input type="hidden" th:value="${statusId}" name="statusId">
-        <!-- Title -->
+    <form th:action="|${task==null?'/':'/task/'+task?.id}|">
+    <button class="btn btn-dark">Orqaga</button>
+        <input th:if="${task==null}" type="hidden" name="userId" th:value="${selectedUserId}">
+        <input th:if="${task!=null}" type="hidden" name="selectedUserId" th:value="${selectedUserId}">
+    </form>
+    <h3 th:if="${task!=null}?'Vazifa yaratish':'Vazifani tahrirlash'" ></h3>
+    <form th:action="@{/task/create}" method="post" enctype="multipart/form-data" class="mt-4" th:object="${taskDTO}">
+        <input type="hidden" name="_csrf" th:value="${_csrf.getToken()}">
+        <input type="hidden" name="selectedUserId" th:value="${selectedUserId}">
+        <input th:if="${task==null}" type="hidden" th:value="${statusId}" name="statusId">
+        <input th:if="${task!=null}" type="hidden" th:value="${task.status.id}" name="statusId">
+        <input th:if="${task!=null}" type="hidden" th:value="${task?.id}" name="taskId">
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
-            <input type="text" id="title" name="title" class="form-control" placeholder="Enter task title" required>
+            <input type="text" id="title" th:value="${task?.title}" name="title" class="form-control" placeholder="Vazifa nomini kiriting...">
+            <span class="text-danger"
+                  th:if="${#fields.hasErrors('title')}"
+                  th:each="er:${#fields.errors('title')}"
+                  th:text="${er}"></span>
         </div>
 
-        <!-- Description -->
         <div class="mb-3">
             <label for="description" class="form-label">Description</label>
-            <textarea id="description" name="description" class="form-control" rows="3" placeholder="Enter task description" required></textarea>
+            <textarea id="description" name="description" class="form-control" rows="3" placeholder="Vazifa uchun sharh kiritish..."
+                      th:text="${task?.description}"></textarea>
+        </div>
+
+
+        <div class="mb-3">
+            <label for="file" class="form-label">
+                <img th:if="${task?.file!=null}" th:src="|/file/get/${task?.file?.id}|" height="100" width="100" alt="file">
+                Rasm biriktirish...
+            </label>
+            <input type="file" hidden="hidden" id="file" name="file" class="form-control">
         </div>
 
         <div class="mb-3">
-            <label for="file" class="form-label">Task Image</label>
-            <input type="file" id="file" name="file" class="form-control">
+            <input type="date" th:value="${task?.deadline}" name="deadline" class="form-control">
         </div>
 
         <div class="mb-3">
-            <label for="userSelect" class="form-label">Assign Users</label>
+            <label for="userSelect" class="form-label">Foydalanuvchi biriktirish</label>
             <select id="userSelect" class="form-select" onchange="addUser()">
-                <option value="" disabled selected>Select a user</option>
-                <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.fullName}"></option>
+                <option value="" disabled selected>foydalanuvchi tanlang</option>
+                <option th:each="user : ${users}"
+                        th:value="${user.id}"
+                        th:text="${user.fullName}"></option>
             </select>
         </div>
-        <div class="mb-3">
-            <input type="date" name="deadline" class="form-control">
+
+        <div id="existingUsers" class="d-none">
+            <input type="hidden" th:each="user : ${task?.users}" th:data-id="${user.id}" th:value="${user.fullName}">
         </div>
+
         <div id="selectedUsers" class="mb-3"></div>
-        <button type="submit" class="btn btn-primary">Add Task</button>
+
+        <button type="submit" class="btn btn-success">Saqlash</button>
     </form>
 </div>
 </body>

@@ -9,10 +9,8 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskFilter {
-    private String search="";
-    private UUID userId;
-    private UUID selectedUserId;
-    private String deadline_filter="";
-    private Boolean isAll=false;
+public class CriminalUserDTO {
+    private String full_name;
+    private UUID photo_id;
+    private Long overdue_task_count;
 }

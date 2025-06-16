@@ -3,13 +3,11 @@ package com.example.task_manager_mvc;
 import com.example.task_manager_mvc.entity.*;
 import com.example.task_manager_mvc.repo.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,23 +21,26 @@ public class Runner implements CommandLineRunner {
     private final StatusRepository statusRepository;
     private final TaskRepository taskRepository;
     private final CommentRepository commentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Runner(UserRepository userRepository,
                   AttachmentRepository attachmentRepository,
                   AttachmentContentRepository attachmentContentRepository,
                   StatusRepository statusRepository,
                   TaskRepository taskRepository,
-                  CommentRepository commentRepository) {
+                  CommentRepository commentRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.attachmentRepository = attachmentRepository;
         this.attachmentContentRepository = attachmentContentRepository;
         this.statusRepository = statusRepository;
         this.taskRepository = taskRepository;
         this.commentRepository = commentRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public void run(String... args) throws Exception {}/*{
+
         //attachment
         Attachment attachment=new Attachment(null,"rasm1");
         attachmentRepository.save(attachment);
@@ -59,15 +60,33 @@ public class Runner implements CommandLineRunner {
         );
         attachmentContentRepository.save(attachmentContent2);
 
+        Attachment attachment3=new Attachment(null,"E");
+        attachmentRepository.save(attachment3);
+        File file3 = new File("C:/java/PDP java/8-modul_spring-mvc/task_manager_mvc/src/main/java/com/example/task_manager_mvc/files/E.jpg");
+        byte[] bytes3 = Files.readAllBytes(file3.toPath());
+        AttachmentContent attachmentContent3=new AttachmentContent(
+                null,attachment3,bytes3
+        );
+        attachmentContentRepository.save(attachmentContent3);
+
+        Attachment attachment4=new Attachment(null,"T");
+        attachmentRepository.save(attachment4);
+        File file4 = new File("C:/java/PDP java/8-modul_spring-mvc/task_manager_mvc/src/main/java/com/example/task_manager_mvc/files/T.jpg");
+        byte[] bytes4 = Files.readAllBytes(file4.toPath());
+        AttachmentContent attachmentContent4=new AttachmentContent(
+                null,attachment4,bytes4
+        );
+        attachmentContentRepository.save(attachmentContent4);
+
         //users
         User user1 = new User(
-                null, "admin", "123", "Ilon Mask", attachment
+                null, "Ilonjon", passwordEncoder.encode("123"), "Ilon Mask", attachment
         );
         User user2 = new User(
-                null, "user", "123", "Eshmat toshmatov",null
+                null, "Eshmatjon", passwordEncoder.encode("123"), "Eshmat Hikmatov",attachment3
         );
         User user3 = new User(
-                null, "userjon", "123", "Hikmat Nursatov", null
+                null, "Toshmatjon", passwordEncoder.encode("123"), "Toshmat Nursatov", attachment4
         );
         userRepository.save(user1);
         userRepository.save(user2);

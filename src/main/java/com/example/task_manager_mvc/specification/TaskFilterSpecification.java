@@ -28,9 +28,10 @@ public class TaskFilterSpecification {
                         predicate = cb.and(predicate, cb.between(root.get("deadline"), LocalDate.now(), LocalDate.now().plusDays(1)));
                         break;
                     case "yaqin":
-                        predicate = cb.and(predicate, cb.between(root.get("deadline"), LocalDate.now(), LocalDate.now().plusDays(3)));
+                        predicate = cb.and(predicate, cb.between(root.get("deadline"), LocalDate.now().plusDays(2), LocalDate.now().plusDays(3)));
                         break;
                     case "deadlinesiz":
+                        predicate = cb.and(predicate, cb.isNull(root.get("deadline")));
                         break;
                     case "all":
                         break;

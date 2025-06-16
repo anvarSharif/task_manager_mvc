@@ -6,31 +6,47 @@
 </head>
 <body>
 <div class="container mt-5">
-    <h3 th:if="status==null?'Create Status':'Edite Status'">Create Status</h3>
-    <form th:action="status==null?'/status/create':'/status/edite'" method="post" class="mt-4">
+    <form action="/">
+        <button class="btn btn-dark">Orqaga</button>
+        <input type="hidden" name="userId" th:value="${selectedUserId}">
+    </form>
+    <h3 th:if="${status?.id==null}?'Ustun yaratish':'Ustunni tahrirlash'"></h3>
+    <form th:action="${status?.id==null}?'/status/create':'/status/edite'" method="post" class="mt-4" th:object="${statusDTO}">
+        <input type="hidden" name="_csrf" th:value="${_csrf.getToken()}">
         <input type="hidden" th:value="${status?.id}" name="statusId">
+        <input type="hidden" th:value="${selectedUserId}" name="selectedUserId">
         <div class="mb-3">
             <label for="status" class="form-label">Status</label>
-            <input type="text" id="status" name="status" th:value="${status?.status}"  class="form-control" placeholder="Enter status" required>
+            <input type="text" id="status" name="status" th:value="${status?.status}"  class="form-control" placeholder="Ustun nomini kiriting...">
+            <span class="text-danger"
+                    th:if="${#fields.hasErrors('status')}"
+                  th:each="er:${#fields.errors('status')}"
+                  th:text="${er}"></span>
         </div>
 
         <div class="mb-3">
             <label for="number" class="form-label" th:text="|Number (saqlangan ohirgi status numberi ${endStatusOrder})|" ></label>
-            <input type="number" id="number" name="number" th:value="${status?.number}" class="form-control" placeholder="Enter number" required>
+            <input type="number" id="number" name="number" th:value="${status?.number}" class="form-control" placeholder="Ustun tartib raqamini kiriting...">
+            <span class="text-danger"
+                  th:if="${#fields.hasErrors('number')}"
+                  th:each="er:${#fields.errors('number')}"
+                  th:text="${er}"></span>
         </div>
 
         <div th:if="${completedStatus==null||status?.isCompleted==true}" class="form-check mb-3">
             <input type="checkbox" id="isCompleted" name="isCompleted"
                    class="form-check-input"
                    th:checked="${status?.isCompleted != null && status.isCompleted}">
-            <label for="isCompleted" class="form-check-label">Is Completed</label>
+            <label for="isCompleted" class="form-check-label">tugatuvchi ustunmi?</label>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary">Saqlash</button>
     </form>
-    <form th:if="${status!=null}" action="/status/delete" method="post">
+    <form th:if="${status?.id!=null}" action="/status/delete" method="post">
+        <input type="hidden" th:value="${selectedUserId}" name="selectedUserId">
+        <input type="hidden" name="_csrf" th:value="${_csrf.getToken()}">
     <input type="hidden" th:value="${status.id}" name="statusId">
-    <button type="submit" class="btn btn-danger my-2">Delete this Status</button>
+    <button type="submit" class="btn btn-danger my-2">Bu ustunni o'chirish</button>
 </form>
 </div>
 </body>

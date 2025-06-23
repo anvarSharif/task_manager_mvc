@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+//@Service
 public class Runner implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -39,7 +39,7 @@ public class Runner implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {}/*{
+    public void run(String... args) throws Exception {
 
         //attachment
         Attachment attachment=new Attachment(null,"rasm1");
@@ -116,5 +116,5 @@ public class Runner implements CommandLineRunner {
         //comment
         Comment comment=new Comment(null,"nima gap?",task,user1, LocalDateTime.now());
         commentRepository.save(comment);
-    }*/
+    }
 }

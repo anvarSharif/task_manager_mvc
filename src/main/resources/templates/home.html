@@ -10,6 +10,14 @@
 </head>
 <body>
 <div class="container mt-4">
+    <div class="d-flex justify-content-end">
+        <form th:action="@{/logout}" method="post" class="d-inline">
+            <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn btn-outline-danger my-2">
+                Chiqish
+            </button>
+        </form>
+    </div>
     <form action="" class="d-flex align-items-center">
         <input type="hidden" name="_csrf" th:value="${_csrf.getToken()}">
         <input type="text" class="form-control w-25 me-3" placeholder="qidirish..." name="search"
@@ -59,6 +67,7 @@
              </th:block>
         </div>
     </form>
+
 
     <form action="/report/criminals" style="display: inline-block;">
         <button class="btn btn-outline-secondary m-2">Jinoyatchilar</button>

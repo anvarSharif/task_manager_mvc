@@ -13,20 +13,19 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf->csrf.ignoringRequestMatchers("/logout"));
 
         http.authorizeHttpRequests(manager -> {
             manager
-                    .requestMatchers( "/login", "/auth/*").permitAll()
+                    .requestMatchers("/login", "/auth/*").permitAll()
                     .anyRequest()
                     .authenticated();
         });
 
         http.formLogin((manager) -> {
-            //manager.loginPage("/login").defaultSuccessUrl("/");
+            manager.loginPage("/login").defaultSuccessUrl("/");
         });
-        http.logout((manager)->{
-            manager.logoutUrl("/logout").logoutSuccessUrl("/");
+        http.logout((manager) -> {
+            manager.logoutUrl("/logout").logoutSuccessUrl("/login").permitAll();
         });
 
         return http.build();
